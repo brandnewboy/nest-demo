@@ -1,0 +1,10 @@
+joi_test: test
+db:
+  mysql:
+    type: mysql
+    username: root
+    password: example
+
+  mongodb:
+    type: mongodb
+    uri: mongodb://192.168.137.128:27017
