@@ -25,7 +25,7 @@ module.exports = {
 		'@typescript-eslint/no-explicit-any': 'off',
 		indent: ['off', 'tab'],
 		// 箭头函数参数只有一个时不要有小括号
-		'arrow-parens': 'avoid',
+		'arrow-parens': 'off',
 		// 'no-unused-vars': 'warn',
 		'@typescript-eslint/no-unused-vars': 'warn',
 		'prettier/prettier': ['error', { ...prettierConf }],

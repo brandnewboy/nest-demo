@@ -6,29 +6,49 @@ import { CustomExceptionFilter } from './filters/custom-exception.filter';
 import { AllExceptionFilter } from './filters/all-exception.filter';
 import { createLogger } from 'winston';
 import * as winston from 'winston';
-import { utilities, WinstonModule } from 'nest-winston';
+import {
+	utilities,
+	WinstonModule,
+	WINSTON_MODULE_NEST_PROVIDER,
+} from 'nest-winston';
+import 'winston-daily-rotate-file';
+import { resolve } from 'node:path';
+
 // TODO 滚动生成日志文件
 async function bootstrap() {
-	// const logger = new Logger();
-
-	const instance = createLogger({
-		transports: [
-			new winston.transports.Console({
-				format: winston.format.combine(
-					winston.format.timestamp(),
-					utilities.format.nestLike('zhang li'),
-				),
-			}),
-		],
-	});
-
-	const logger = WinstonModule.createLogger({
-		instance,
-	});
-	const app = await NestFactory.create(AppModule, {
-		// logger: ['error', 'warn', 'debug', 'log', 'verbose'],
-		logger,
-	});
+	// const instance = createLogger({
+	// 	transports: [
+	// 		new winston.transports.Console({
+	// 			level: 'verbose',
+	// 			format: winston.format.combine(
+	// 				winston.format.timestamp(),
+	// 				utilities.format.nestLike('zhang li'),
+	// 			),
+	// 		}),
+	// 		new winston.transports.DailyRotateFile({
+	// 			level: 'warn',
+	// 			dirname: resolve(__dirname, '../logs'),
+	// 			filename: '%DATE%.log',
+	// 			datePattern: 'YYYY-MM-DD-HH',
+	// 			zippedArchive: true,
+	// 			maxSize: '20m', // 每个日志文件的最大大小为20MB
+	// 			maxFiles: '14d', // 保留14天的日志文件
+	// 			format: winston.format.combine(
+	// 				winston.format.timestamp(),
+	// 				utilities.format.nestLike('zhang li', {
+	// 					colors: false,
+	// 					prettyPrint: false,
+	// 				}),
+	// 			),
+	// 		}),
+	// 	],
+	// });
+	//
+	// const logger = WinstonModule.createLogger({
+	// 	instance,
+	// });
+	const app = await NestFactory.create(AppModule);
+	app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 	app.setGlobalPrefix('api/v1');
 
 	/**
@@ -38,10 +58,10 @@ async function bootstrap() {
 	 *
 	 * 也就是说，将捕获所有异常的过滤器放在最前面!!!
 	 */
-	app.useGlobalFilters(new AllExceptionFilter(logger));
+	app.useGlobalFilters(new AllExceptionFilter());
 
-	app.useGlobalFilters(new CustomExceptionFilter(logger));
-	app.useGlobalFilters(new HttpExceptionFilter(logger));
+	app.useGlobalFilters(new CustomExceptionFilter());
+	app.useGlobalFilters(new HttpExceptionFilter());
 
 	await app.listen(8001);
 	// logger.log(`Application listening on port 8001`);

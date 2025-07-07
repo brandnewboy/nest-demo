@@ -3,6 +3,7 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpStatus,
+	Logger,
 	LoggerService,
 } from '@nestjs/common';
 import { CustomException } from '../exception/custom-exception';
@@ -10,7 +11,9 @@ import { Request, Response } from 'express';
 
 @Catch(CustomException)
 export class CustomExceptionFilter implements ExceptionFilter {
-	constructor(private readonly logger: LoggerService) {}
+	private readonly logger: LoggerService = new Logger();
+
+	constructor() {}
 
 	catch(exception: CustomException, host: ArgumentsHost): any {
 		this.logger.verbose(

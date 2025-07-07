@@ -3,13 +3,18 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpStatus,
+	Logger,
 	LoggerService,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
-	constructor(private readonly logger: LoggerService) {}
+	private readonly logger: LoggerService = new Logger(
+		AllExceptionFilter.name,
+	);
+
+	constructor() {}
 
 	catch(exception: Error, host: ArgumentsHost): any {
 		this.logger.verbose(`AllExceptionFilter called`, 'AllExceptionFilter');
@@ -21,7 +26,7 @@ export class AllExceptionFilter implements ExceptionFilter {
 
 		this.logger.error(
 			`${request.method} ${request.url} : ${message}`,
-			'AllExceptionFilter',
+			exception.stack,
 		);
 
 		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({

@@ -2,9 +2,12 @@
 version: '3.1'
 
 services:
-
-  db:
-    image: mysql
+  app:
+    image: node:20.10.0
+    container_name: nest-app
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: example
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/usr/src/app
+    command: sh -c "pnpm install && pnpm start:prod"
