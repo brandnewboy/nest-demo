@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Logger, Module } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import Configuration from './configuration';
@@ -7,27 +7,17 @@ import { ConfigEnum } from './enum/config.enum';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User } from './user/user.entity';
 import { Profile } from './user/profile.entity';
-import * as Joi from 'joi';
+import { Logs } from './logs/logs.entity';
+import { Roles } from './roles/roles.entity';
 
+@Global()
 @Module({
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
 			ignoreEnvFile: true,
 			load: [Configuration],
-			// TODO 配置文件字段校验 - Joi
-			// validationSchema: Joi.object({
-			// 	db: Joi.object({
-			// 		mysql: Joi.object({
-			// 			port: Joi.number().port().required(),
-			// 			username: Joi.string().required(),
-			// 			password: Joi.string().required(),
-			// 		}).required(),
-			// 		mongodb: Joi.object({
-			// 			uri: Joi.string().uri().required(),
-			// 		}).required(),
-			// 	}).required(),
-			// }),
+			// TODO 配置文件字段校验 - Joi zod
 		}),
 		TypeOrmModule.forRootAsync({
 			imports: [ConfigModule],
@@ -39,9 +29,10 @@ import * as Joi from 'joi';
 				username: config.get(ConfigEnum.DB_USERNAME),
 				password: config.get(ConfigEnum.DB_PASSWORD),
 				database: config.get(ConfigEnum.DB_DATABASE),
-				entities: [User, Profile],
+				entities: [User, Profile, Logs, Roles],
 				synchronize: true, // 同步本地的schema与数据库的schema
-				logging: ['error', 'info'],
+				// logging: ['error', 'info'],
+				logging: true,
 			}),
 		}),
 		MongooseModule.forRootAsync({
@@ -54,6 +45,7 @@ import * as Joi from 'joi';
 		UserModule,
 	],
 	controllers: [],
-	providers: [],
+	providers: [Logger],
+	exports: [Logger],
 })
 export class AppModule {}
