@@ -15,7 +15,7 @@ export const connectOptions = {
 	database: config.get(ConfigEnum.DB_DATABASE),
 	entities: [resolve(__dirname, './**/*.entity.{ts,js}')],
 	synchronize: true, // 同步本地的schema与数据库的schema
-	logging: ['error', 'warn'],
+	logging: process.env.NODE_ENV === 'development',
 } as DataSourceOptions;
 
 /**

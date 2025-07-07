@@ -1,15 +1,18 @@
 import {
+	Body,
 	Controller,
+	Delete,
 	Get,
-	HttpException,
-	HttpStatus,
+	Query,
 	Logger,
 	LoggerService,
+	Param,
+	Patch,
 	Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
-import { CustomException } from '../exception/custom-exception';
+import { QueryUserDto } from './dto/query-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -18,19 +21,40 @@ export class UserController {
 	constructor(
 		private readonly userService: UserService,
 		private readonly config: ConfigService,
-	) {
-		this.logger.log('UserController created');
+	) {}
+
+	@Get('')
+	getUsers(@Query() query: QueryUserDto): any {
+		this.logger.verbose('query: ' + JSON.stringify(query));
+		return this.userService.findAll(query);
 	}
 
-	// @Get()
-	// getUsers(): any {
-	// 	return this.userService.getUsers();
-	// }
+	@Get('info/:id')
+	getUser(@Param('id') id: number): any {
+		return this.userService.getUserById(id);
+	}
 
-	// @Get('/:id')
-	// getUserById(id: number): any {
-	// 	return this.userService.getUserById(id);
-	// }
+	@Post('')
+	addUser(@Body() dto: any): any {
+		this.logger.log('add user: ', dto);
+		return 'add user';
+	}
+
+	@Patch('/:id')
+	updateUser(@Body() dto: any, @Param('id') id: number): any {
+		return 'update user';
+	}
+
+	@Delete('/:id')
+	deleteUser(@Param('id') id: number): any {
+		return 'delete user';
+	}
+
+	@Get('/profile')
+	getProfile(): any {
+		return 'get profile';
+	}
+
 	//
 	// @Get('/:id/profile')
 	// getProfileByUserId(@Param() params: any): any {
@@ -46,47 +70,4 @@ export class UserController {
 	// getProfileById(@Param() params: any): any {
 	// 	return this.userService.getProfileById(params.id);
 	// }
-
-	@Post('/logs-group')
-	async getLogsGroup(): Promise<any> {
-		this.logger.log('/logs-group');
-		const res = await this.userService.getLogsByGroup(3);
-		return res.map(o => {
-			return {
-				result: o.result,
-				count: Number(o.count),
-			};
-		});
-	}
-
-	// @Post()
-	// createUser(): any {
-	// 	return this.userService.createUser();
-	// }
-
-	@Get('/config')
-	getConfig() {
-		return this.config.get('db.mysql2');
-	}
-
-	@Get('/exception-test')
-	exceptionTest() {
-		const e = new HttpException('this is a test', HttpStatus.FORBIDDEN);
-		throw e;
-	}
-
-	@Get('/exception-test2')
-	exceptionTest2() {
-		const e = new CustomException(
-			'❌❌🔄this is a custom exception test',
-			9999,
-		);
-		throw e;
-	}
-
-	@Get('/exception-test3')
-	exceptionTest3() {
-		const e = new Error('❌🔄🔄❌🔄this is a all exception test');
-		throw e;
-	}
 }

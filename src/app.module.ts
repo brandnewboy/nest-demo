@@ -5,14 +5,10 @@ import Configuration from './configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigEnum } from './enum/config.enum';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User } from './user/user.entity';
-import { Profile } from './user/profile.entity';
-import { Logs } from './logs/logs.entity';
-import { Roles } from './roles/roles.entity';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
-import { resolve } from 'node:path';
 import { connectOptions } from '../ormconfig';
+import { UtilsModule } from './utils/utils.module';
 
 @Global()
 @Module({
@@ -34,6 +30,7 @@ import { connectOptions } from '../ormconfig';
 		UserModule,
 		LogsModule,
 		RolesModule,
+		UtilsModule,
 	],
 	controllers: [],
 	providers: [Logger],
