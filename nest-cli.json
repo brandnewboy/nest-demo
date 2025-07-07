@@ -7,6 +7,7 @@
     "assets": [
       {
         "include": "**/*.yml",
+        "outDir": "./dist/src",
         "watchAssets": true
       }
     ]

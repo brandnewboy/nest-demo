@@ -3,4 +3,6 @@ db:
     type: mysql
     host: 192.168.137.128
     port: 3306
+    database: admindb
+    sync: true
 

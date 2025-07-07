@@ -11,7 +11,9 @@ import { Request, Response } from 'express';
 
 @Catch(CustomException)
 export class CustomExceptionFilter implements ExceptionFilter {
-	private readonly logger: LoggerService = new Logger();
+	private readonly logger: LoggerService = new Logger(
+		CustomExceptionFilter.name,
+	);
 
 	constructor() {}
 

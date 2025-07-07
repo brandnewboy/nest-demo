@@ -3,27 +3,21 @@ import {
 	Get,
 	HttpException,
 	HttpStatus,
-	Inject,
 	Logger,
 	LoggerService,
-	Param,
 	Post,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ConfigService } from '@nestjs/config';
 import { CustomException } from '../exception/custom-exception';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Controller('user')
 export class UserController {
-	private readonly logger = new Logger(UserController.name);
+	private readonly logger: LoggerService = new Logger(UserController.name);
 
 	constructor(
 		private readonly userService: UserService,
 		private readonly config: ConfigService,
-
-		// @Inject(WINSTON_MODULE_NEST_PROVIDER)
-		// private readonly logger: Logger,
 	) {
 		this.logger.log('UserController created');
 	}

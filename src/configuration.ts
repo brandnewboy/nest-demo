@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import * as yaml from 'js-yaml';
 import { ConfigObject } from '@nestjs/config';
-import * as _ from 'lodash';
+import { merge } from 'lodash';
 
 type IMode = 'development' | 'production' | 'test';
 
@@ -19,10 +19,9 @@ const RUN_ENV_PATH = resolve(__dirname, './config', RUN_ENV_FILE);
 export default () => {
 	const commonConfigFile = readFileSync(COMMON_FILE_PATH, 'utf-8');
 	const runEnvFile = readFileSync(RUN_ENV_PATH, 'utf-8');
-	const configFile = _.merge(
+	const configFile = merge(
 		yaml.load(commonConfigFile),
 		yaml.load(runEnvFile),
-	);
-	console.log(configFile);
-	return configFile as ConfigObject;
+	) as ConfigObject;
+	return configFile;
 };
