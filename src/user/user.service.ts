@@ -7,6 +7,13 @@ import { Logs } from '../logs/logs.entity';
 import { QueryUserDto } from './dto/query-user.dto';
 import { UtilsService } from '../utils/utils.service';
 
+interface IQueryUserResDto {
+	data: User[];
+	total: number;
+	page: number;
+	limit: number;
+}
+
 @Injectable()
 export class UserService {
 	private readonly logger: LoggerService = new Logger(UserService.name);
@@ -23,9 +30,37 @@ export class UserService {
 		private readonly utils: UtilsService,
 	) {}
 
-	async findAll(
-		query: QueryUserDto,
-	): Promise<{ data: User[]; total: number; page: number; limit: number }> {
+	async findOne(id: number) {
+		// 构建 SQL 语句示例：
+		// SELECT user.id, user.username FROM user WHERE user.id = 1
+		const user = await this.userRepository.findOne({
+			select: {
+				id: true,
+				username: true,
+				roles: {
+					id: true,
+					name: true,
+				},
+				profile: {
+					id: true,
+					gender: true,
+					photo: true,
+					address: true,
+				},
+			},
+			where: {
+				id,
+			},
+			relations: {
+				profile: true,
+				roles: true,
+			},
+		});
+		console.log('==============> ', user);
+		return user;
+	}
+
+	async findAll(query: QueryUserDto): Promise<IQueryUserResDto> {
 		const { page = 1, limit = 10, username, role, gender } = query;
 		const skip = (page - 1) * limit;
 		/**
@@ -115,18 +150,50 @@ export class UserService {
 		};
 	}
 
-	getUserById(id: number) {
+	async create(user: User) {
+		if (Array.isArray(user.roles)) {
+			// TODO 查询需要的角色
+		}
+		const userTmp = this.userRepository.create(user);
+		await this.userRepository.save(userTmp);
+
+		return {
+			data: {
+				id: userTmp.id,
+			},
+			msg: 'create user success',
+		};
+	}
+
+	async remove(id: number) {
+		console.log('remove called id: ', id);
 		// 构建 SQL 语句示例：
-		// SELECT user.id, user.username FROM user WHERE user.id = 1
-		return this.userRepository.findOne({
-			where: {
-				id,
-			},
-			select: {
-				id: true,
-				username: true,
-			},
-		});
+		// DELETE FROM user WHERE user.id = 1
+		// return this.userRepository.delete(id);
+		const user = await this.findOne(id);
+		if (!user) {
+			return {
+				data: null,
+				msg: 'user not found',
+			};
+		}
+		const res = await this.userRepository.remove(user);
+		return {
+			data: res,
+			msg: 'delete user success',
+		};
+	}
+
+	async update(newUserDto: any, id: number) {
+		// update方法只能修改单模型结构，不能对有(级联)关联关系的数据实体对应的表信息进行修改
+		// const res = await this.userRepository.update(id, newUserDto);
+		const oldUser = await this.findOne(id);
+		console.log(oldUser);
+		const newUser = this.userRepository.merge(oldUser, newUserDto);
+		console.log(newUser);
+		const res = await this.userRepository.save(newUser);
+
+		return res;
 	}
 
 	getProfile(userId: number) {

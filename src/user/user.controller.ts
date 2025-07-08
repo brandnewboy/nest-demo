@@ -9,45 +9,60 @@ import {
 	Param,
 	Patch,
 	Post,
+	UseFilters,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { ConfigService } from '@nestjs/config';
 import { QueryUserDto } from './dto/query-user.dto';
+import { User } from './user.entity';
+import { TypeormFilter } from '../filters/typeorm.filter';
 
+@UseFilters(new TypeormFilter())
 @Controller('user')
 export class UserController {
 	private readonly logger: LoggerService = new Logger(UserController.name);
 
-	constructor(
-		private readonly userService: UserService,
-		private readonly config: ConfigService,
-	) {}
+	constructor(private readonly userService: UserService) {}
 
 	@Get('')
-	getUsers(@Query() query: QueryUserDto): any {
+	async getUsers(@Query() query: QueryUserDto): Promise<any> {
 		this.logger.verbose('query: ' + JSON.stringify(query));
-		return this.userService.findAll(query);
+		const res = await this.userService.findAll(query);
+		return {
+			data: res,
+		};
 	}
 
 	@Get('info/:id')
-	getUser(@Param('id') id: number): any {
-		return this.userService.getUserById(id);
+	async getUserById(@Param('id') id: number): Promise<any> {
+		const res = await this.userService.findOne(id);
+		delete res['logger'];
+		return {
+			data: res,
+		};
 	}
 
 	@Post('')
-	addUser(@Body() dto: any): any {
-		this.logger.log('add user: ', dto);
-		return 'add user';
+	addUser(@Body() dto: User): any {
+		this.logger.log('add user: ' + JSON.stringify(dto));
+		const res = this.userService.create(dto);
+		return {
+			data: res,
+		};
 	}
 
 	@Patch('/:id')
 	updateUser(@Body() dto: any, @Param('id') id: number): any {
-		return 'update user';
+		/*TODO*
+		 * 1.当前是不是用户自己在进行操作
+		 * 2.判断用户是否有更新的权限
+		 * 3.返回数据不能包含敏感的信息如password
+		 */
+		return this.userService.update(dto, id);
 	}
 
 	@Delete('/:id')
 	deleteUser(@Param('id') id: number): any {
-		return 'delete user';
+		return this.userService.remove(id);
 	}
 
 	@Get('/profile')

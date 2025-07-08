@@ -21,7 +21,8 @@ export class AllExceptionFilter implements ExceptionFilter {
 		const ctx = host.switchToHttp();
 		const request = ctx.getRequest<Request>();
 		const response = ctx.getResponse<Response>();
-		const message = exception.message;
+
+		const message = exception.message || exception.name || '服务器错误';
 		const customStatusCode = 90001;
 
 		this.logger.error(
@@ -35,6 +36,8 @@ export class AllExceptionFilter implements ExceptionFilter {
 			timestamp: new Date().toISOString(),
 			path: request.url,
 			message,
+			errorType: exception.name,
+			error: exception,
 		});
 	}
 }

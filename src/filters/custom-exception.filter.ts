@@ -18,10 +18,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
 	constructor() {}
 
 	catch(exception: CustomException, host: ArgumentsHost): any {
-		this.logger.verbose(
-			`CustomExceptionFilter called`,
-			'CustomExceptionFilter',
-		);
+		this.logger.verbose(`CustomExceptionFilter called`);
 		const ctx = host.switchToHttp();
 		const request = ctx.getRequest<Request>();
 		const response = ctx.getResponse<Response>();
@@ -30,7 +27,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
 
 		this.logger.error(
 			`${request.method} ${request.url} : ${message}`,
-			'CustomExceptionFilter',
+			exception.stack,
 		);
 
 		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
@@ -38,6 +35,7 @@ export class CustomExceptionFilter implements ExceptionFilter {
 			timestamp: new Date().toISOString(),
 			path: request.url,
 			message,
+			errorType: exception.name,
 		});
 	}
 }
