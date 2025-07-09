@@ -2,42 +2,46 @@ import {
 	ArgumentsHost,
 	Catch,
 	ExceptionFilter,
-	HttpException,
+	HttpStatus,
 	Logger,
 	LoggerService,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-@Catch(HttpException)
-export class HttpExceptionFilter implements ExceptionFilter {
+@Catch()
+export class AllExceptionFilter implements ExceptionFilter {
 	private readonly logger: LoggerService = new Logger(
-		HttpExceptionFilter.name,
+		AllExceptionFilter.name,
 	);
 
 	constructor() {}
 
-	catch(exception: HttpException, host: ArgumentsHost): any {
+	catch(exception: Error, host: ArgumentsHost): any {
+		this.logger.verbose(`AllExceptionFilter called`, 'AllExceptionFilter');
 		const ctx = host.switchToHttp();
 		const request = ctx.getRequest<Request>();
 		const response = ctx.getResponse<Response>();
 
-		const status = exception.getStatus();
-		const message = exception.message || exception.name;
-		const error = exception.getResponse();
+		let message = exception.message || exception.name || '服务器错误';
+		const customStatusCode = 90001;
 
 		this.logger.error(
 			`${request.method} ${request.url} : ${message}`,
 			exception.stack,
 		);
 
-		response.status(status).json({
-			code: status,
+		if (exception.name === 'TokenExpiredError') {
+			message = 'Token 已过期，请重新登录';
+		}
+
+		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+			code: customStatusCode,
 			ip: request.ip,
 			timestamp: new Date().toISOString(),
 			path: request.url,
 			message,
-			error,
 			errorType: exception.name,
+			error: exception,
 		});
 	}
 }

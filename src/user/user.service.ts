@@ -4,8 +4,11 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
-import { QueryUserDto } from './dto/query-user.dto';
+import { CreateUserDto, QueryUserDto } from './dto';
 import { UtilsService } from '../utils/utils.service';
+import { Roles } from '../roles/roles.entity';
+import { IReqPayloadUser } from '../auth/auth.service';
+import { JwtService } from '@nestjs/jwt';
 
 interface IQueryUserResDto {
 	data: User[];
@@ -27,8 +30,54 @@ export class UserService {
 		@InjectRepository(Logs)
 		private readonly logsRepository: Repository<Logs>,
 
+		@InjectRepository(Roles)
+		private readonly roleRepository: Repository<Roles>,
+
 		private readonly utils: UtilsService,
+
+		private readonly jwtService: JwtService,
 	) {}
+
+	loginFindOne(username: string, password: string) {
+		// 构建 SQL 语句示例：
+		// SELECT username, password FROM user WHERE user.username = 'admin' AND user.password = '123456'
+		return this.userRepository.findOne({
+			select: {
+				id: true,
+				username: true,
+				password: true,
+			},
+			where: {
+				username,
+				password,
+			},
+			relations: {
+				roles: false,
+				profile: false,
+			},
+		});
+	}
+
+	/**
+	 * 由passport的LocalStrategy验证通过后(证明用户密码正确)，再调用这个方法
+	 * 处理如：
+	 * 	- 生成token
+	 * 	- 记录登录日志
+	 * 	......
+	 */
+	afterGuardLogin(user: IReqPayloadUser) {
+		// 生成token
+		const token = this.jwtService.sign(user);
+		// TODO 对接redis，记录登录日志
+		return {
+			token,
+			user,
+		};
+	}
+
+	parseToken(token: string): IReqPayloadUser {
+		return this.jwtService.verify(token.replace('Bearer ', ''));
+	}
 
 	async findOne(id: number) {
 		// 构建 SQL 语句示例：
@@ -56,7 +105,6 @@ export class UserService {
 				roles: true,
 			},
 		});
-		console.log('==============> ', user);
 		return user;
 	}
 
@@ -150,23 +198,28 @@ export class UserService {
 		};
 	}
 
-	async create(user: User) {
+	async create(user: CreateUserDto) {
+		let roles: Roles[] = [];
 		if (Array.isArray(user.roles)) {
 			// TODO 查询需要的角色
+			roles = await this.roleRepository
+				.createQueryBuilder('roles')
+				.select(['roles.id', 'roles.name'])
+				.where('roles.id IN (:...roles)', { roles: user.roles })
+				.getMany();
 		}
-		const userTmp = this.userRepository.create(user);
-		await this.userRepository.save(userTmp);
-
-		return {
-			data: {
-				id: userTmp.id,
+		delete user.roles;
+		const processedUserInfo = this.userRepository.merge(
+			user as unknown as User,
+			{
+				roles,
 			},
-			msg: 'create user success',
-		};
+		);
+		const userTmp = this.userRepository.create(processedUserInfo);
+		return await this.userRepository.save(userTmp);
 	}
 
 	async remove(id: number) {
-		console.log('remove called id: ', id);
 		// 构建 SQL 语句示例：
 		// DELETE FROM user WHERE user.id = 1
 		// return this.userRepository.delete(id);
@@ -188,16 +241,13 @@ export class UserService {
 		// update方法只能修改单模型结构，不能对有(级联)关联关系的数据实体对应的表信息进行修改
 		// const res = await this.userRepository.update(id, newUserDto);
 		const oldUser = await this.findOne(id);
-		console.log(oldUser);
 		const newUser = this.userRepository.merge(oldUser, newUserDto);
-		console.log(newUser);
 		const res = await this.userRepository.save(newUser);
 
 		return res;
 	}
 
 	getProfile(userId: number) {
-		console.log('getProfile called userId: ', userId);
 		// 构建 SQL 语句示例：
 		// SELECT * FROM profile WHERE profile.user_id = 1
 		return this.profileRepository.findOne({
@@ -210,7 +260,6 @@ export class UserService {
 	}
 
 	getOperationLogs(userId: number) {
-		console.log('getOperationLogs called userId: ', userId);
 		// 构建 SQL 语句示例：
 		// SELECT * FROM logs WHERE logs.user_id = 1
 		return this.logsRepository.find({
@@ -223,7 +272,6 @@ export class UserService {
 	}
 
 	getProfileById(profileId: number) {
-		console.log('getProfileById called id: ', profileId);
 		// 构建 SQL 语句示例：
 		// SELECT * FROM profile WHERE profile.id = 1
 		return this.profileRepository.findOne({

@@ -10,11 +10,16 @@ import {
 	Patch,
 	Post,
 	UseFilters,
+	UseGuards,
+	Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { QueryUserDto } from './dto/query-user.dto';
-import { User } from './user.entity';
-import { TypeormFilter } from '../filters/typeorm.filter';
+import { CreateUserDto, QueryUserDto } from './dto';
+import { TypeormFilter } from '../common/filters/typeorm.filter';
+import { LocalGuard } from '../common/guards/local.guard';
+import { Request } from 'express';
+import { IReqPayloadUser } from '../auth/auth.service';
+import { IsPublicRoute } from '../common/decorators/is-public-route.decorator';
 
 @UseFilters(new TypeormFilter())
 @Controller('user')
@@ -42,11 +47,15 @@ export class UserController {
 	}
 
 	@Post('')
-	addUser(@Body() dto: User): any {
+	async addUser(@Body() dto: CreateUserDto) {
 		this.logger.log('add user: ' + JSON.stringify(dto));
-		const res = this.userService.create(dto);
+		const res = await this.userService.create(dto);
 		return {
-			data: res,
+			data: {
+				username: res.username,
+				id: res.id,
+			},
+			msg: 'create user success',
 		};
 	}
 
@@ -70,19 +79,18 @@ export class UserController {
 		return 'get profile';
 	}
 
-	//
-	// @Get('/:id/profile')
-	// getProfileByUserId(@Param() params: any): any {
-	// 	return this.userService.getProfile(params.id);
-	// }
-	//
-	// @Get('/:id/logs')
-	// getUserLogs(@Param() params: any): any {
-	// 	return this.userService.getOperationLogs(params.id);
-	// }
-	//
-	// @Get('/profile/:id')
-	// getProfileById(@Param() params: any): any {
-	// 	return this.userService.getProfileById(params.id);
-	// }
+	@UseGuards(LocalGuard)
+	@IsPublicRoute()
+	@Post('/login')
+	login(@Req() req: Request): any {
+		const { user, token } = this.userService.afterGuardLogin(
+			req.user as IReqPayloadUser,
+		);
+		return {
+			data: {
+				user,
+			},
+			access_token: token,
+		};
+	}
 }

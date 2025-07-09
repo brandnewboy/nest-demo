@@ -1,4 +1,4 @@
-import { ConfigEnum } from './src/enum/config.enum';
+import { ConfigEnum } from './src/common/enum/config.enum';
 import { resolve } from 'node:path';
 import configuration from './src/configuration';
 import { ConfigService } from '@nestjs/config';

@@ -1,14 +1,18 @@
-import { Global, Logger, Module } from '@nestjs/common';
+import { Global, Logger, Module, ValidationPipe } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import Configuration from './configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigEnum } from './enum/config.enum';
+import { ConfigEnum } from './common/enum/config.enum';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
 import { connectOptions } from '../ormconfig';
 import { UtilsModule } from './utils/utils.module';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { AuthModule } from './auth/auth.module';
+import { JwtGuard } from './common/guards/jwt.guard';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 @Global()
 @Module({
@@ -31,9 +35,32 @@ import { UtilsModule } from './utils/utils.module';
 		LogsModule,
 		RolesModule,
 		UtilsModule,
+		AuthModule,
 	],
 	controllers: [],
-	providers: [Logger],
+	providers: [
+		Logger,
+		{
+			provide: APP_PIPE,
+			useFactory: () => {
+				return new ValidationPipe({
+					transform: true,
+					transformOptions: {
+						// 隐式类型转换 以便于query参数中string类型的数字 能被转换成number类型
+						enableImplicitConversion: true,
+					},
+				});
+			},
+		},
+		{
+			provide: APP_GUARD,
+			useClass: JwtGuard,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: LoggingInterceptor,
+		},
+	],
 	exports: [Logger],
 })
 export class AppModule {}

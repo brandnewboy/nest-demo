@@ -4,7 +4,7 @@ import * as winston from 'winston';
 import 'winston-daily-rotate-file';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModuleOptions } from 'nest-winston/dist/winston.interfaces';
-import { ConfigEnum } from '../enum/config.enum';
+import { ConfigEnum } from '../common/enum/config.enum';
 import { LogsService } from './logs.service';
 import { LogsController } from './logs.controller';
 

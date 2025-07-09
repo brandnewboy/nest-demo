@@ -20,3 +20,15 @@ log:
   max_backups: 10
   max_age: 7
   compress: true
+
+token:
+  secret: secret
+  expiresIn: 60s
+  refreshIn: 7d
+
+routes:
+  whiteList:
+    [
+      { path: '/user', method: 'get' },
+      { path: '/user/info/:id', method: 'get' },
+    ]

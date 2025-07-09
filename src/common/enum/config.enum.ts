@@ -13,4 +13,9 @@ export enum ConfigEnum {
 	LOG_FILE_LEVEL = 'log.fileLevel',
 	LOG_DIR = 'log.dir',
 	LOG_FILENAME = 'log.filename',
+
+	TOKEN_SECRET = 'token.secret',
+	TOKEN_EXPIRES_IN = 'token.expiresIn',
+
+	ROUTES_WHITE_LIST = 'routes.whiteList',
 }

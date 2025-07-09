@@ -1,15 +1,28 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './filters/http-exception.filter';
-import { CustomExceptionFilter } from './filters/custom-exception.filter';
-import { AllExceptionFilter } from './filters/all-exception.filter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { CustomExceptionFilter } from './common/filters/custom-exception.filter';
+import { AllExceptionFilter } from './common/filters/all-exception.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import 'winston-daily-rotate-file';
+import { NextFunction, Request, Response } from 'express';
+
+// 自定义中间件
+const GLOBAL_PREFIX = '/api/v1';
+const setGlobalPrefixMiddleware = (
+	req: Request,
+	res: Response,
+	next: NextFunction,
+) => {
+	req.baseUrl = GLOBAL_PREFIX;
+	next();
+};
 
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
+	app.use(setGlobalPrefixMiddleware);
 	app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
-	app.setGlobalPrefix('api/v1');
+	app.setGlobalPrefix(GLOBAL_PREFIX);
 
 	/**
 	 * warning 注意
