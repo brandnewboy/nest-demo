@@ -21,10 +21,10 @@ import { AuthModule } from './auth/auth.module';
 import { JwtGuard } from '@common/guards/jwt.guard';
 
 /**
- * 创建需要参与DI系统的提供者
+ * 创建需要参与DI系统的全局提供者
  * @returns {Provider[]}
  */
-function createDIProviders(): Provider[] {
+function createDIGlobalProviders(): Provider[] {
 	return [
 		{
 			provide: APP_PIPE,
@@ -75,7 +75,7 @@ function createDIProviders(): Provider[] {
 		AuthModule,
 	],
 	controllers: [],
-	providers: [Logger, ...createDIProviders()],
+	providers: [Logger, ...createDIGlobalProviders()],
 	exports: [Logger],
 })
 export class AppModule {}

@@ -1,13 +1,8 @@
-import { Expose } from 'class-transformer';
-
 export class ListDto<T> {
-	@Expose()
 	page: number;
 
-	@Expose()
 	pageSize: number;
 
-	@Expose()
 	total: number;
 
 	list: T[];

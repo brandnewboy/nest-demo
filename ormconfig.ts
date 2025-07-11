@@ -1,4 +1,4 @@
-import { ConfigEnum } from './src/common/enum/config.enum';
+import { ConfigEnum } from '@src/common/enum/config.enum';
 import { resolve } from 'node:path';
 import configuration from './src/configuration';
 import { ConfigService } from '@nestjs/config';
@@ -6,7 +6,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 
 const config = new ConfigService(configuration());
 
-export const connectOptions = {
+export const connectOptions: DataSourceOptions = {
 	type: 'mysql',
 	host: config.get(ConfigEnum.DB_HOST),
 	port: config.get(ConfigEnum.DB_PORT),
@@ -16,7 +16,7 @@ export const connectOptions = {
 	entities: [resolve(__dirname, './**/*.entity.{ts,js}')],
 	synchronize: true, // 同步本地的schema与数据库的schema
 	logging: process.env.NODE_ENV === 'development',
-} as DataSourceOptions;
+};
 
 /**
  * 提供给TypeORM CLI识别

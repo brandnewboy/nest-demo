@@ -29,33 +29,14 @@ export class Result<T> {
 	}
 
 	/**
-	 * 成功响应的静态工厂方法
-	 * 重载签名 1: 只提供数据，使用默认消息
-	 * @param data - 响应数据
-	 * @returns 成功响应对象
-	 */
-	static success<T>(data: T): Result<T>;
-	/**
-	 * 成功响应的静态工厂方法
-	 * 重载签名 2: 提供消息和数据
-	 * @param message - 响应消息
-	 * @param data - 响应数据
-	 * @returns 成功响应对象
-	 */
-	static success<T>(message: string, data: T): Result<T>;
-	/**
-	 * 成功响应的静态工厂方法
-	 * 重载签名 3: 只提供消息，无数据
-	 * @param message - 响应消息
-	 * @returns 成功响应对象
-	 */
-	static success(message: string): Result<undefined>;
-	/**
 	 * 成功响应的静态工厂方法实现
-	 * @param messageOrData - 响应消息或响应数据
+	 * @param messageOrData {T | string} - 响应消息或响应数据
 	 * @param data - 响应数据（可选）
 	 * @returns 成功响应对象
 	 */
+	static success<T>(data: T): Result<T>;
+	static success<T>(message: string, data: T): Result<T>;
+	static success(message: string): Result<undefined>;
 	static success<T>(
 		messageOrData?: string | T,
 		data?: T,
