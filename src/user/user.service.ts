@@ -9,6 +9,7 @@ import { UtilsService } from '../utils/utils.service';
 import { Roles } from '../roles/roles.entity';
 import { IReqPayloadUser } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { ListDto } from '@common/dto/list.dto';
 
 interface IQueryUserResDto {
 	data: User[];
@@ -108,7 +109,7 @@ export class UserService {
 		return user;
 	}
 
-	async findAll(query: QueryUserDto): Promise<IQueryUserResDto> {
+	async findAll(query: QueryUserDto): Promise<ListDto<User>> {
 		const { page = 1, limit = 10, username, role, gender } = query;
 		const skip = (page - 1) * limit;
 		/**
@@ -125,16 +126,8 @@ export class UserService {
 		 */
 		const queryBuilder = this.userRepository
 			.createQueryBuilder('user')
-			.select(['user.id', 'user.username'])
-			.leftJoin('user.profile', 'profile')
-			.addSelect([
-				'profile.id',
-				'profile.gender',
-				'profile.photo',
-				'profile.address',
-			])
-			.leftJoin('user.roles', 'roles')
-			.addSelect(['roles.id', 'roles.name'])
+			.leftJoinAndSelect('user.profile', 'profile')
+			.leftJoinAndSelect('user.roles', 'roles')
 			.where('1=1');
 		const processedQueryBuilder = this.utils.sqlCondition<User>(
 			queryBuilder,
@@ -149,35 +142,6 @@ export class UserService {
 			},
 		);
 
-		// const queryBuilder = this.userRepository
-		// 	.createQueryBuilder('user')
-		// 	.select(['user.id', 'user.username'])
-		// 	.leftJoin('user.profile', 'profile')
-		// 	.addSelect([
-		// 		'profile.id',
-		// 		'profile.gender',
-		// 		'profile.photo',
-		// 		'profile.address',
-		// 	])
-		// 	.leftJoin('user.roles', 'roles')
-		// 	.addSelect(['roles.id', 'roles.name'])
-		// 	.where('1=1')
-		// 	.andWhere('user.username LIKE :username', {
-		// 		username: `%${username || ''}%`,
-		// 	});
-		// if (role) {
-		// 	queryBuilder.andWhere('roles.id = :role', {
-		// 		role: Number(role),
-		// 	});
-		// }
-		//
-		// if (gender) {
-		// 	queryBuilder.andWhere('profile.gender = :gender', {
-		// 		gender: Number(gender),
-		// 	});
-		// }
-		// const res = await queryBuilder.take(limit).skip(skip).getMany();
-
 		const res = await processedQueryBuilder
 			.take(limit)
 			.skip(skip)
@@ -190,12 +154,12 @@ export class UserService {
 			.setParameters(queryBuilder.getParameters());
 		const [{ total }] = await countQueryBuilder.getRawMany();
 
-		return {
-			data: res,
-			total: Number(total),
+		return new ListDto<User>({
+			list: res,
+			total,
 			page,
-			limit,
-		};
+			pageSize: limit,
+		});
 	}
 
 	async create(user: CreateUserDto) {

@@ -1,11 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { CustomExceptionFilter } from './common/filters/custom-exception.filter';
-import { AllExceptionFilter } from './common/filters/all-exception.filter';
+import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
+import { CustomExceptionFilter } from '@common/filters/custom-exception.filter';
+import { AllExceptionFilter } from '@common/filters/all-exception.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import 'winston-daily-rotate-file';
 import { NextFunction, Request, Response } from 'express';
+import { TypeormFilter } from '@common/filters/typeorm.filter';
+import { LoggingInterceptor } from '@common/interceptors/logging.interceptor';
+import { ResponseSerializerInterceptor } from '@common/interceptors/response-serializer.interceptor';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 
 // 自定义中间件
 const GLOBAL_PREFIX = '/api/v1';
@@ -24,6 +28,8 @@ async function bootstrap() {
 	app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
 	app.setGlobalPrefix(GLOBAL_PREFIX);
 
+	app.useGlobalInterceptors(new LoggingInterceptor());
+
 	/**
 	 * warning 注意
 	 * 当将捕获所有异常的过滤器与绑定到特定类型的过滤器结合使用时，
@@ -35,6 +41,7 @@ async function bootstrap() {
 
 	app.useGlobalFilters(new CustomExceptionFilter());
 	app.useGlobalFilters(new HttpExceptionFilter());
+	app.useGlobalFilters(new TypeormFilter());
 
 	await app.listen(8001);
 }

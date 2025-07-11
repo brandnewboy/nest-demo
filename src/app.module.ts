@@ -1,9 +1,16 @@
-import { Global, Logger, Module, ValidationPipe } from '@nestjs/common';
+import {
+	ClassSerializerInterceptor,
+	Global,
+	Logger,
+	Module,
+	Provider,
+	ValidationPipe,
+} from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import Configuration from './configuration';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigEnum } from './common/enum/config.enum';
+import { ConfigEnum } from '@common/enum/config.enum';
 import { MongooseModule } from '@nestjs/mongoose';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
@@ -11,8 +18,38 @@ import { connectOptions } from '../ormconfig';
 import { UtilsModule } from './utils/utils.module';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
-import { JwtGuard } from './common/guards/jwt.guard';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { JwtGuard } from '@common/guards/jwt.guard';
+
+/**
+ * 创建需要参与DI系统的提供者
+ * @returns {Provider[]}
+ */
+function createDIProviders(): Provider[] {
+	return [
+		{
+			provide: APP_PIPE,
+			useFactory: () => {
+				return new ValidationPipe({
+					transform: true,
+					// 白名单 只接受DTO定义时进行装饰过的字段，避免敏感不安全的字段被提交
+					whitelist: true,
+					transformOptions: {
+						// 隐式类型转换 以便于query参数中string类型的数字 能被转换成number类型
+						enableImplicitConversion: true,
+					},
+				});
+			},
+		},
+		{
+			provide: APP_GUARD,
+			useClass: JwtGuard,
+		},
+		{
+			provide: APP_INTERCEPTOR,
+			useClass: ClassSerializerInterceptor,
+		},
+	];
+}
 
 @Global()
 @Module({
@@ -38,29 +75,7 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 		AuthModule,
 	],
 	controllers: [],
-	providers: [
-		Logger,
-		{
-			provide: APP_PIPE,
-			useFactory: () => {
-				return new ValidationPipe({
-					transform: true,
-					transformOptions: {
-						// 隐式类型转换 以便于query参数中string类型的数字 能被转换成number类型
-						enableImplicitConversion: true,
-					},
-				});
-			},
-		},
-		{
-			provide: APP_GUARD,
-			useClass: JwtGuard,
-		},
-		{
-			provide: APP_INTERCEPTOR,
-			useClass: LoggingInterceptor,
-		},
-	],
+	providers: [Logger, ...createDIProviders()],
 	exports: [Logger],
 })
 export class AppModule {}

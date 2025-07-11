@@ -3,10 +3,12 @@ import {
 	Catch,
 	ExceptionFilter,
 	HttpException,
+	HttpStatus,
 	Logger,
 	LoggerService,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { Result } from '@common/dto/result.dto';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -43,14 +45,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
 			exception.stack,
 		);
 
-		response.status(status).json({
-			code: status,
+		const resBody = Result.fail(status, message, {
 			ip: request.ip,
 			timestamp: new Date().toISOString(),
 			path: request.url,
-			message,
-			error,
+			error: error || exception,
 			errorType: exception.name,
 		});
+		response.status(status).json(resBody);
 	}
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { TypeORMError, QueryFailedError } from 'typeorm';
 import { Response, Request } from 'express';
+import { Result } from '@common/dto/result.dto';
 
 @Catch(TypeORMError)
 export class TypeormFilter implements ExceptionFilter {
@@ -18,8 +19,10 @@ export class TypeormFilter implements ExceptionFilter {
 
 		let message = exception.message || exception.name;
 		let code: number = HttpStatus.INTERNAL_SERVER_ERROR;
+		let error = exception;
 		if (exception instanceof QueryFailedError) {
 			code = exception.driverError.errno;
+			error = exception.driverError;
 			if (code === 1062) {
 				message = `唯一索引冲突: ${message}`;
 			}
@@ -29,13 +32,13 @@ export class TypeormFilter implements ExceptionFilter {
 			`${request.method} ${request.url} : ${message}`,
 			exception.stack,
 		);
-
-		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-			code,
+		const resBody = Result.fail(HttpStatus.INTERNAL_SERVER_ERROR, message, {
 			ip: request.ip,
-			message,
 			timestamp: new Date().toISOString(),
+			path: request.url,
+			error: error,
 			errorType: exception.name,
 		});
+		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(resBody);
 	}
 }

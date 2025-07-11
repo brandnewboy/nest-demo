@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_ROUTE_KEY } from '../decorators/is-public-route.decorator';
 import { ConfigEnum } from '../enum/config.enum';
-import { UserService } from '../../user/user.service';
+import { UserService } from '@src/user/user.service';
 export type IReqMethod =
 	| 'GET'
 	| 'POST'

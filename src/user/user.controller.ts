@@ -9,32 +9,35 @@ import {
 	Param,
 	Patch,
 	Post,
-	UseFilters,
 	UseGuards,
 	Req,
+	SerializeOptions,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, QueryUserDto } from './dto';
-import { TypeormFilter } from '../common/filters/typeorm.filter';
-import { LocalGuard } from '../common/guards/local.guard';
+import { LocalGuard } from '@common/guards/local.guard';
 import { Request } from 'express';
 import { IReqPayloadUser } from '../auth/auth.service';
-import { IsPublicRoute } from '../common/decorators/is-public-route.decorator';
+import { IsPublicRoute } from '@common/decorators/is-public-route.decorator';
+import { Result } from '@common/dto/result.dto';
+import { ListDto } from '@common/dto/list.dto';
+import { User } from '@src/user/user.entity';
 
-@UseFilters(new TypeormFilter())
 @Controller('user')
 export class UserController {
 	private readonly logger: LoggerService = new Logger(UserController.name);
 
 	constructor(private readonly userService: UserService) {}
 
+	@IsPublicRoute()
+	@SerializeOptions({
+		type: Result<ListDto<User>>,
+	})
 	@Get('')
 	async getUsers(@Query() query: QueryUserDto): Promise<any> {
 		this.logger.verbose('query: ' + JSON.stringify(query));
 		const res = await this.userService.findAll(query);
-		return {
-			data: res,
-		};
+		return Result.success(res);
 	}
 
 	@Get('info/:id')

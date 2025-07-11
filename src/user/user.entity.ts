@@ -13,18 +13,21 @@ import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
 import { Roles } from '../roles/roles.entity';
 import { Logger } from '@nestjs/common';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
+	@Exclude()
 	private logger = new Logger(User.name);
+
 	@PrimaryGeneratedColumn()
 	id: number;
 
 	@Column({ unique: true })
-	// @Column()
 	username: string;
 
 	@Column()
+	@Exclude()
 	password: string;
 
 	@OneToOne(() => Profile, profile => profile.user, {

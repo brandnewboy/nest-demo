@@ -7,6 +7,7 @@ import {
 	LoggerService,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { Result } from '@common/dto/result.dto';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
@@ -23,7 +24,6 @@ export class AllExceptionFilter implements ExceptionFilter {
 		const response = ctx.getResponse<Response>();
 
 		let message = exception.message || exception.name || '服务器错误';
-		const customStatusCode = 90001;
 
 		this.logger.error(
 			`${request.method} ${request.url} : ${message}`,
@@ -34,14 +34,13 @@ export class AllExceptionFilter implements ExceptionFilter {
 			message = 'Token 已过期，请重新登录';
 		}
 
-		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-			code: customStatusCode,
+		const resBody = Result.fail(HttpStatus.INTERNAL_SERVER_ERROR, message, {
 			ip: request.ip,
 			timestamp: new Date().toISOString(),
 			path: request.url,
-			message,
-			errorType: exception.name,
 			error: exception,
+			errorType: exception.name,
 		});
+		response.status(HttpStatus.INTERNAL_SERVER_ERROR).json(resBody);
 	}
 }
