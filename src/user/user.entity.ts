@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
-import { Roles } from '../roles/roles.entity';
+import { Role } from '@src/role/role.entity';
 import { Logger } from '@nestjs/common';
 import { Exclude } from 'class-transformer';
 
@@ -38,7 +38,7 @@ export class User {
 	@OneToMany(() => Logs, logs => logs.user)
 	logs: Logs[];
 
-	@ManyToMany(() => Roles, roles => roles.users, {
+	@ManyToMany(() => Role, role => role.users, {
 		cascade: ['insert', 'update'],
 	})
 	@JoinTable({
@@ -46,7 +46,7 @@ export class User {
 		joinColumn: { name: 'user_id', referencedColumnName: 'id' },
 		inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
 	})
-	roles: Roles[];
+	roles: Role[];
 
 	@BeforeRemove()
 	beforeRemove() {

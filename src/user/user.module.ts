@@ -5,14 +5,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
-import { Roles } from '../roles/roles.entity';
+import { Role } from '@src/role/role.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ConfigEnum } from '../common/enum/config.enum';
+import { ConfigEnum } from '@common/enum/config.enum';
 
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([User, Profile, Logs, Roles]),
+		TypeOrmModule.forFeature([User, Profile, Logs, Role]),
 		JwtModule.registerAsync({
 			useFactory: (config: ConfigService) => ({
 				secret: config.get<string>(ConfigEnum.TOKEN_SECRET),

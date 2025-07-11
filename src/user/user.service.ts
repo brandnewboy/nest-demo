@@ -6,7 +6,7 @@ import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
 import { CreateUserDto, QueryUserDto } from './dto';
 import { UtilsService } from '../utils/utils.service';
-import { Roles } from '../roles/roles.entity';
+import { Role } from '@src/role/role.entity';
 import { IReqPayloadUser } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { ListDto } from '@common/dto/list.dto';
@@ -25,8 +25,8 @@ export class UserService {
 		@InjectRepository(Logs)
 		private readonly logsRepository: Repository<Logs>,
 
-		@InjectRepository(Roles)
-		private readonly roleRepository: Repository<Roles>,
+		@InjectRepository(Role)
+		private readonly roleRepository: Repository<Role>,
 
 		private readonly utils: UtilsService,
 
@@ -159,7 +159,7 @@ export class UserService {
 	}
 
 	async create(user: CreateUserDto) {
-		let roles: Roles[] = [];
+		let roles: Role[] = [];
 		if (Array.isArray(user.roles)) {
 			// TODO 查询需要的角色
 			roles = await this.roleRepository

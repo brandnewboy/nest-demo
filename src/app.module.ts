@@ -21,7 +21,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { MenuModule } from './menu/menu.module';
 import { LogsModule } from './logs/logs.module';
-import { RolesModule } from './roles/roles.module';
+import { RoleModule } from '@src/role/role.module';
 import { UtilsModule } from './utils/utils.module';
 
 /**
@@ -74,7 +74,7 @@ function createDIGlobalProviders(): Provider[] {
 		}),
 		UserModule,
 		LogsModule,
-		RolesModule,
+		RoleModule,
 		UtilsModule,
 		AuthModule,
 		MenuModule,

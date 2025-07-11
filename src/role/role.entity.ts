@@ -2,8 +2,8 @@ import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user/user.entity';
 import { Menu } from '@src/menu/menu.entity';
 
-@Entity()
-export class Roles {
+@Entity({ name: 'roles' })
+export class Role {
 	@PrimaryGeneratedColumn()
 	id: number;
 

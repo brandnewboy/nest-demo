@@ -3,10 +3,9 @@ import {
 	Entity,
 	JoinTable,
 	ManyToMany,
-	ManyToOne,
 	PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Roles } from '@src/roles/roles.entity';
+import { Role } from '@src/role/role.entity';
 
 @Entity()
 export class Menu {
@@ -31,7 +30,7 @@ export class Menu {
 	@Column()
 	acl: number;
 
-	@ManyToMany(() => Roles, roles => roles.menus)
+	@ManyToMany(() => Role, roles => roles.menus)
 	@JoinTable({
 		name: 'role_menus',
 		joinColumn: {
@@ -43,5 +42,5 @@ export class Menu {
 			referencedColumnName: 'id',
 		},
 	})
-	roles: Roles[];
+	roles: Role[];
 }
