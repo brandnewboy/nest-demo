@@ -1,6 +1,7 @@
 import {
 	IsArray,
 	IsIn,
+	IsNotEmpty,
 	IsNumber,
 	IsObject,
 	IsOptional,
@@ -47,14 +48,16 @@ export class ProfileDto {
 }
 
 export class CreateUserDto {
-	@IsString()
+	@IsString({ message: '用户名必须是字符串' })
+	@IsNotEmpty({ message: '用户名不能为空' })
 	username: string;
 
-	@IsString()
-	@Length(6, 12)
+	@IsString({ message: '密码必须是字符串' })
+	@IsNotEmpty({ message: '密码不能为空' })
+	@Length(6, 12, { message: '密码长度必须在6-12之间' })
 	password: string;
 
-	@IsArray()
+	@IsArray({ message: '角色必须是id列表' })
 	@IsOptional()
 	roles?: number[];
 

@@ -10,13 +10,7 @@ import { Roles } from '../roles/roles.entity';
 import { IReqPayloadUser } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { ListDto } from '@common/dto/list.dto';
-
-interface IQueryUserResDto {
-	data: User[];
-	total: number;
-	page: number;
-	limit: number;
-}
+import { Result } from '@common/dto/result.dto';
 
 @Injectable()
 export class UserService {
@@ -109,7 +103,7 @@ export class UserService {
 		return user;
 	}
 
-	async findAll(query: QueryUserDto): Promise<ListDto<User>> {
+	async findAll(query: QueryUserDto) {
 		const { page = 1, limit = 10, username, role, gender } = query;
 		const skip = (page - 1) * limit;
 		/**
@@ -154,12 +148,14 @@ export class UserService {
 			.setParameters(queryBuilder.getParameters());
 		const [{ total }] = await countQueryBuilder.getRawMany();
 
-		return new ListDto<User>({
-			list: res,
-			total,
-			page,
-			pageSize: limit,
-		});
+		return Result.ok(
+			new ListDto<User>({
+				list: res,
+				total,
+				page,
+				pageSize: limit,
+			}),
+		);
 	}
 
 	async create(user: CreateUserDto) {
@@ -209,64 +205,5 @@ export class UserService {
 		const res = await this.userRepository.save(newUser);
 
 		return res;
-	}
-
-	getProfile(userId: number) {
-		// 构建 SQL 语句示例：
-		// SELECT * FROM profile WHERE profile.user_id = 1
-		return this.profileRepository.findOne({
-			where: {
-				user: {
-					id: userId,
-				},
-			},
-		});
-	}
-
-	getOperationLogs(userId: number) {
-		// 构建 SQL 语句示例：
-		// SELECT * FROM logs WHERE logs.user_id = 1
-		return this.logsRepository.find({
-			where: {
-				user: {
-					id: userId,
-				},
-			},
-		});
-	}
-
-	getProfileById(profileId: number) {
-		// 构建 SQL 语句示例：
-		// SELECT * FROM profile WHERE profile.id = 1
-		return this.profileRepository.findOne({
-			where: {
-				id: Number(profileId),
-			},
-		});
-	}
-
-	getLogsByGroup(userId: number) {
-		/**
-		 * @sql
-		 * SELECT logs.result as result, COUNT("logs.result") AS count
-		 * FROM logs
-		 * WHERE logs.user_id = #{userId}
-		 * GROUP BY logs.result
-		 * ORDER BY logs.result, count DESC;
-		 */
-		return (
-			this.logsRepository
-				.createQueryBuilder('logs')
-				.select('logs.result', 'result')
-				// count 应该是number类型，但是typeorm会自动转换为string类型，所以需要手动转换
-				.addSelect('COUNT("logs.result")', 'count')
-				.where('logs.user_id = :userId', { userId })
-				.groupBy('logs.result')
-				.orderBy('logs.result', 'DESC')
-				.addOrderBy('count', 'DESC')
-				// .offset(2)
-				// .limit(3)
-				.getRawMany()
-		);
 	}
 }

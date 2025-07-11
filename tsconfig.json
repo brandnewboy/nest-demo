@@ -22,5 +22,12 @@
       "@src/*": ["src/*"],
       "@common/*": ["src/common/*"],
     }
+  },
+  "ts-node": {
+    "require": ["tsconfig-paths/register"],
+    "paths": {
+      "@src/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+    }
   }
 }

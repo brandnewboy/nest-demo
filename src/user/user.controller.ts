@@ -23,25 +23,23 @@ import { Result } from '@common/dto/result.dto';
 import { ListDto } from '@common/dto/list.dto';
 import { User } from '@src/user/user.entity';
 
+// @IsPublicRoute()
 @Controller('user')
 export class UserController {
 	private readonly logger: LoggerService = new Logger(UserController.name);
 
 	constructor(private readonly userService: UserService) {}
 
-	@IsPublicRoute()
 	@SerializeOptions({
 		type: Result<ListDto<User>>,
 	})
 	@Get('')
-	async getUsers(@Query() query: QueryUserDto): Promise<any> {
-		this.logger.verbose('query: ' + JSON.stringify(query));
-		const res = await this.userService.findAll(query);
-		return Result.success(res);
+	async getUsers(@Query() query: QueryUserDto) {
+		return await this.userService.findAll(query);
 	}
 
 	@Get('info/:id')
-	async getUserById(@Param('id') id: number): Promise<any> {
+	async getUserById(@Param('id') id: number) {
 		const res = await this.userService.findOne(id);
 		delete res['logger'];
 		return {

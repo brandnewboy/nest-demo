@@ -6,19 +6,23 @@ import {
 	Provider,
 	ValidationPipe,
 } from '@nestjs/common';
-import { UserModule } from './user/user.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import Configuration from './configuration';
+import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigEnum } from '@common/enum/config.enum';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { JwtGuard } from '@common/guards/jwt.guard';
+
+import { ConfigEnum } from '@common/enum/config.enum';
+import { connectOptions } from '../ormconfig';
+import Configuration from './configuration';
+
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { MenuModule } from './menu/menu.module';
 import { LogsModule } from './logs/logs.module';
 import { RolesModule } from './roles/roles.module';
-import { connectOptions } from '../ormconfig';
 import { UtilsModule } from './utils/utils.module';
-import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
-import { AuthModule } from './auth/auth.module';
-import { JwtGuard } from '@common/guards/jwt.guard';
 
 /**
  * 创建需要参与DI系统的全局提供者
@@ -73,6 +77,7 @@ function createDIGlobalProviders(): Provider[] {
 		RolesModule,
 		UtilsModule,
 		AuthModule,
+		MenuModule,
 	],
 	controllers: [],
 	providers: [Logger, ...createDIGlobalProviders()],

@@ -55,11 +55,18 @@ export class JwtGuard extends AuthGuard('jwt') {
 		const token = request.headers.authorization;
 		// TODO 白名单 - 配置文件
 		// 1. @ISPublicRoute() 优先放行
-		const isPublicRoute = this.reflector.get<boolean>(
+		const isPublicRouteHandler = this.reflector.get<boolean>(
 			IS_PUBLIC_ROUTE_KEY,
 			context.getHandler(),
 		);
-		if (isPublicRoute) {
+		const isPublicRouteClass = this.reflector.get<boolean>(
+			IS_PUBLIC_ROUTE_KEY,
+			context.getClass(),
+		);
+		if (isPublicRouteHandler) {
+			return true;
+		}
+		if (isPublicRouteClass) {
 			return true;
 		}
 

@@ -34,13 +34,10 @@ export class Result<T> {
 	 * @param data - 响应数据（可选）
 	 * @returns 成功响应对象
 	 */
-	static success<T>(data: T): Result<T>;
-	static success<T>(message: string, data: T): Result<T>;
-	static success(message: string): Result<undefined>;
-	static success<T>(
-		messageOrData?: string | T,
-		data?: T,
-	): Result<T | undefined> {
+	static ok<T>(data: T): Result<T>;
+	static ok<T>(message: string, data: T): Result<T>;
+	static ok(message: string): Result<undefined>;
+	static ok<T>(messageOrData?: string | T, data?: T): Result<T | undefined> {
 		if (typeof messageOrData === 'string' && data !== undefined) {
 			// 消息和数据都传递了
 			return new Result(200, messageOrData, data);

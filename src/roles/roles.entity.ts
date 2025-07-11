@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../user/user.entity';
+import { Menu } from '@src/menu/menu.entity';
 
 @Entity()
 export class Roles {
@@ -14,4 +15,7 @@ export class Roles {
 		onUpdate: 'CASCADE',
 	})
 	users: User[];
+
+	@ManyToMany(() => Menu, menu => menu.roles)
+	menus: Menu[];
 }
