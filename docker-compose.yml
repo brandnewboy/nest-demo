@@ -1,13 +1,72 @@
-# Use root/example as user/password credentials
 version: '3.1'
 
 services:
+  # NestJS 应用服务
   app:
-    image: node:20.10.0
+    build: .
     container_name: nest-app
     restart: always
     ports:
-      - "3000:3000"
+      - "8001:8001"
+    depends_on:
+      - mysql
+      - mongo
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_DATABASE: admindb
+      MONGO_URI: mongodb://mongo:27017
+
+  # MySQL 服务
+  mysql:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
     volumes:
-      - ./:/usr/src/app
-    command: sh -c "pnpm install && pnpm start:prod"
+      - mysql_data:/var/lib/mysql
+
+  # MongoDB 服务
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: testdb
+      MONGO_INITDB_USERNAME: admin
+      MONGO_INITDB_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
+
+  # MySQL 管理界面
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "9002:8080"
+
+  # MongoDB 管理界面
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "9001:8081"
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: li
+      ME_CONFIG_BASICAUTH_PASSWORD: li
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+
+volumes:
+  mysql_data:
+  mongo_data:
