@@ -4,14 +4,11 @@ import {
 	Delete,
 	Get,
 	Query,
-	Logger,
-	LoggerService,
 	Param,
 	Patch,
 	Post,
 	UseGuards,
 	Req,
-	HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, LoginResDto, QueryUserDto, UpdateUserDto } from './dto';
@@ -22,7 +19,6 @@ import { IsPublicRoute } from '@common/decorators/is-public-route.decorator';
 import { Result } from '@common/dto/result.dto';
 import { User } from '@src/user/user.entity';
 
-@IsPublicRoute()
 @Controller('user')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
