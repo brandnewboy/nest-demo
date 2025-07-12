@@ -11,72 +11,71 @@ import {
 	Post,
 	UseGuards,
 	Req,
-	SerializeOptions,
+	HttpStatus,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, QueryUserDto } from './dto';
+import { CreateUserDto, LoginResDto, QueryUserDto, UpdateUserDto } from './dto';
 import { LocalGuard } from '@common/guards/local.guard';
 import { Request } from 'express';
 import { IReqPayloadUser } from '../auth/auth.service';
 import { IsPublicRoute } from '@common/decorators/is-public-route.decorator';
 import { Result } from '@common/dto/result.dto';
-import { ListDto } from '@common/dto/list.dto';
 import { User } from '@src/user/user.entity';
 
-// @IsPublicRoute()
+@IsPublicRoute()
 @Controller('user')
 export class UserController {
-	private readonly logger: LoggerService = new Logger(UserController.name);
-
 	constructor(private readonly userService: UserService) {}
 
-	@SerializeOptions({
-		type: Result<ListDto<User>>,
-	})
 	@Get('')
 	async getUsers(@Query() query: QueryUserDto) {
-		return await this.userService.findAll(query);
+		const res = await this.userService.findAll(query);
+		return Result.ok(res);
 	}
 
 	@Get('info/:id')
 	async getUserById(@Param('id') id: number) {
 		const res = await this.userService.findOne(id);
-		delete res['logger'];
-		return {
-			data: res,
-		};
+		return Result.ok(res);
 	}
 
 	@Post('')
 	async addUser(@Body() dto: CreateUserDto) {
-		this.logger.log('add user: ' + JSON.stringify(dto));
 		const res = await this.userService.create(dto);
-		return {
-			data: {
-				username: res.username,
-				id: res.id,
-			},
-			msg: 'create user success',
-		};
+		return Result.ok('添加用户成功', res);
 	}
 
 	@Patch('/:id')
-	updateUser(@Body() dto: any, @Param('id') id: number): any {
-		/*TODO*
-		 * 1.当前是不是用户自己在进行操作
-		 * 2.判断用户是否有更新的权限
-		 * 3.返回数据不能包含敏感的信息如password
-		 */
-		return this.userService.update(dto, id);
+	async updateUser(
+		@Body() dto: UpdateUserDto,
+		@Param('id') id: number,
+		@Req() request: Request,
+	) {
+		let res: any;
+		const userInfo = request.user as IReqPayloadUser;
+		const currentUpdateUserId = dto.id;
+		//	TODO 使用redis缓存 用户信息 - 避免频繁查询数据库
+		// if (userInfo.userId !== currentUpdateUserId) {
+		// 	res = null;
+		// 	// TODO 用户 - 接口 权限
+		// 	return Result.fail(
+		// 		HttpStatus.FORBIDDEN,
+		// 		'您没有权限更新该用户信息',
+		// 	);
+		// }
+		return Result.ok(
+			'更新用户信息成功',
+			await this.userService.update(dto as Partial<User>, id),
+		);
 	}
 
 	@Delete('/:id')
-	deleteUser(@Param('id') id: number): any {
-		return this.userService.remove(id);
+	async deleteUser(@Param('id') id: number) {
+		return Result.ok('删除用户成功', await this.userService.remove(id));
 	}
 
-	@Get('/profile')
-	getProfile(): any {
+	@Get('/profile/:id')
+	getProfile() {
 		return 'get profile';
 	}
 
@@ -87,11 +86,9 @@ export class UserController {
 		const { user, token } = this.userService.afterGuardLogin(
 			req.user as IReqPayloadUser,
 		);
-		return {
-			data: {
-				user,
-			},
+		return Result.ok<LoginResDto>('登录成功', {
+			username: user.username,
 			access_token: token,
-		};
+		});
 	}
 }

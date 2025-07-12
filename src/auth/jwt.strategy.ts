@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { ConfigEnum } from '../common/enum/config.enum';
+import { ConfigEnum } from '@common/enum/config.enum';
 import { IReqPayloadUser } from './auth.service';
 
 @Injectable()

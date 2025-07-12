@@ -1,8 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { SelectQueryBuilder } from 'typeorm';
+import {
+	DeepPartial,
+	FindOptionsWhere,
+	Repository,
+	SelectQueryBuilder,
+} from 'typeorm';
 
 interface ISqlCondition {
 	key: string;
+	rawValue: unknown;
 	value: unknown;
 	operator?: string;
 }
@@ -13,19 +19,23 @@ export class UtilsService {
 
 	sqlCondition<T>(
 		queryBuilder: SelectQueryBuilder<T>,
-		conditions: Record<string, unknown | ISqlCondition>,
+		conditions: Record<string, string | number | ISqlCondition>,
 	): SelectQueryBuilder<T> {
 		Object.keys(conditions).forEach(key => {
 			if (conditions[key]) {
 				if (typeof conditions[key] === 'object') {
 					const {
 						key: _k,
+						rawValue,
 						value,
 						operator,
 					} = conditions[key] as ISqlCondition;
-					queryBuilder.andWhere(`${key} ${operator} :${_k}`, {
-						[_k]: value,
-					});
+					if (rawValue) {
+						const v = value ? value : rawValue;
+						queryBuilder.andWhere(`${key} ${operator} :${_k}`, {
+							[_k]: v,
+						});
+					}
 				} else {
 					queryBuilder.andWhere(`${key} = :${key}`, {
 						[key]: conditions[key],
@@ -34,5 +44,24 @@ export class UtilsService {
 			}
 		});
 		return queryBuilder;
+	}
+
+	async replaceUpdateInfo<T extends { id: number }>(
+		repo: Repository<T>,
+		id: number,
+		updateInfo: DeepPartial<T>,
+		processor?: (oldInfo: T, newInfo: T) => T,
+	) {
+		const oldInfo = await repo.findOne({
+			where: { id } as FindOptionsWhere<T>,
+		});
+		let newInfo: T = null;
+		if (oldInfo) {
+			newInfo = repo.merge(oldInfo, updateInfo);
+			if (processor) {
+				newInfo = processor(oldInfo, newInfo);
+			}
+		}
+		return newInfo;
 	}
 }

@@ -6,11 +6,10 @@ import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
 import { CreateUserDto, QueryUserDto } from './dto';
 import { UtilsService } from '../utils/utils.service';
-import { Role } from '@src/role/role.entity';
+import { Role } from '@src/roles/entities/role.entity';
 import { IReqPayloadUser } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { ListDto } from '@common/dto/list.dto';
-import { Result } from '@common/dto/result.dto';
 
 @Injectable()
 export class UserService {
@@ -128,6 +127,7 @@ export class UserService {
 			{
 				'user.username': {
 					key: 'username',
+					rawValue: username,
 					value: `%${username}%`,
 					operator: 'LIKE',
 				},
@@ -148,14 +148,12 @@ export class UserService {
 			.setParameters(queryBuilder.getParameters());
 		const [{ total }] = await countQueryBuilder.getRawMany();
 
-		return Result.ok(
-			new ListDto<User>({
-				list: res,
-				total,
-				page,
-				pageSize: limit,
-			}),
-		);
+		return new ListDto<User>({
+			list: res,
+			total,
+			page,
+			pageSize: limit,
+		});
 	}
 
 	async create(user: CreateUserDto) {
@@ -190,20 +188,48 @@ export class UserService {
 				msg: 'user not found',
 			};
 		}
-		const res = await this.userRepository.remove(user);
-		return {
-			data: res,
-			msg: 'delete user success',
-		};
+		return await this.userRepository.remove(user);
 	}
 
-	async update(newUserDto: any, id: number) {
+	async update(newUserDto: Partial<User>, id: number) {
 		// update方法只能修改单模型结构，不能对有(级联)关联关系的数据实体对应的表信息进行修改
 		// const res = await this.userRepository.update(id, newUserDto);
 		const oldUser = await this.findOne(id);
+		const roles = await this.findRoles(
+			newUserDto.roles.map(role => {
+				if (typeof role === 'number') {
+					return role;
+				} else {
+					return role.id;
+				}
+			}),
+		);
+		// 使用新的角色数据
+		newUserDto.roles = roles;
+
+		// 删除旧用户的角色数据
+		delete oldUser.roles;
+
 		const newUser = this.userRepository.merge(oldUser, newUserDto);
+		console.log(newUser);
+		// const res = await this.userRepository.update(id, newUser);
+		// TODO 手动更新关联表user_roles
+		// delete newUser.roles;
 		const res = await this.userRepository.save(newUser);
 
 		return res;
+	}
+
+	async findRoles(roleIds: number[]) {
+		let roles: Role[] = [];
+		if (Array.isArray(roleIds)) {
+			// TODO 查询需要的角色
+			roles = await this.roleRepository
+				.createQueryBuilder('roles')
+				.where('roles.id IN (:...roles)', { roles: roleIds })
+				.getMany();
+		}
+		console.log(roles);
+		return roles;
 	}
 }

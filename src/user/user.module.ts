@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { Profile } from './profile.entity';
 import { Logs } from '../logs/logs.entity';
-import { Role } from '@src/role/role.entity';
+import { Role } from '@src/roles/entities/role.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ConfigEnum } from '@common/enum/config.enum';

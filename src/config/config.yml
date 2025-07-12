@@ -23,12 +23,11 @@ log:
 
 token:
   secret: secret
-  expiresIn: 60s
+  expiresIn: 6000s
   refreshIn: 7d
 
 routes:
   whiteList:
     [
-      { path: '/user', method: 'get' },
-      { path: '/user/info/:id', method: 'get' },
+
     ]

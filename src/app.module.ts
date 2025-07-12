@@ -21,8 +21,8 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { MenuModule } from './menu/menu.module';
 import { LogsModule } from './logs/logs.module';
-import { RoleModule } from '@src/role/role.module';
 import { UtilsModule } from './utils/utils.module';
+import { RolesModule } from './roles/roles.module';
 
 /**
  * 创建需要参与DI系统的全局提供者
@@ -74,10 +74,11 @@ function createDIGlobalProviders(): Provider[] {
 		}),
 		UserModule,
 		LogsModule,
-		RoleModule,
+		RolesModule,
 		UtilsModule,
 		AuthModule,
 		MenuModule,
+		RolesModule,
 	],
 	controllers: [],
 	providers: [Logger, ...createDIGlobalProviders()],

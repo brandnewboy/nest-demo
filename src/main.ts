@@ -4,18 +4,16 @@ import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { CustomExceptionFilter } from '@common/filters/custom-exception.filter';
 import { AllExceptionFilter } from '@common/filters/all-exception.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import 'winston-daily-rotate-file';
 import { NextFunction, Request, Response } from 'express';
 import { TypeormFilter } from '@common/filters/typeorm.filter';
 import { LoggingInterceptor } from '@common/interceptors/logging.interceptor';
-import { ResponseSerializerInterceptor } from '@common/interceptors/response-serializer.interceptor';
-import { ClassSerializerInterceptor } from '@nestjs/common';
+import 'winston-daily-rotate-file';
 
 // 自定义中间件
 const GLOBAL_PREFIX = '/api/v1';
 const setGlobalPrefixMiddleware = (
 	req: Request,
-	res: Response,
+	_: Response,
 	next: NextFunction,
 ) => {
 	req.baseUrl = GLOBAL_PREFIX;
