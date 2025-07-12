@@ -16,6 +16,9 @@ export class Role {
 	})
 	users: User[];
 
-	@ManyToMany(() => Menu, menu => menu.roles)
+	@ManyToMany(() => Menu, menu => menu.roles, {
+		onDelete: 'CASCADE',
+		onUpdate: 'CASCADE',
+	})
 	menus: Menu[];
 }

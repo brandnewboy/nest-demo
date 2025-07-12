@@ -30,7 +30,7 @@ export class Menu {
 	@Column()
 	acl: number;
 
-	@ManyToMany(() => Role, roles => roles.menus)
+	@ManyToMany(() => Role, roles => roles.menus, { cascade: true })
 	@JoinTable({
 		name: 'role_menus',
 		joinColumn: {

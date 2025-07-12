@@ -13,6 +13,7 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { IsPublicRoute } from '@common/decorators/is-public-route.decorator';
+import { QueryRolesDto } from '@src/roles/dto/query-roles.dto';
 
 @IsPublicRoute()
 @Controller('roles')
@@ -25,8 +26,8 @@ export class RolesController {
 	}
 
 	@Get()
-	async findAll(@Query('roleName') roleName: string) {
-		return await this.rolesService.findAll(roleName);
+	async findAll(@Query() query: QueryRolesDto) {
+		return await this.rolesService.findAll(query);
 	}
 
 	@Get('/info/:id')

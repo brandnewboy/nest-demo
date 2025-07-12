@@ -6,6 +6,8 @@ import { Role } from '@src/roles/entities/role.entity';
 import { Result } from '@common/dto/result.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UtilsService } from '@src/utils/utils.service';
+import { ListDto } from '@common/dto/list.dto';
+import { QueryRolesDto } from '@src/roles/dto/query-roles.dto';
 
 @Injectable()
 export class RolesService {
@@ -23,24 +25,36 @@ export class RolesService {
 		);
 	}
 
-	async findAll(roleName: string) {
-		console.log(typeof roleName);
-		let res: Role[] = [];
+	async findAll(query: QueryRolesDto) {
+		const { page = 1, pageSize = 10, roleName } = query;
+		const skip = (page - 1) * pageSize;
+
 		const queryBuilder = this.roleRepository
 			.createQueryBuilder('roles')
 			.where('1=1');
-		res = await this.utils
-			.sqlCondition(queryBuilder, {
-				'roles.name': {
-					key: 'name',
-					rawValue: roleName,
-					value: `%${roleName}%`,
-					operator: 'LIKE',
-				},
-			})
-			.getMany();
 
-		return Result.ok('获取角色列表成功', res);
+		const processedQueryBuilder = this.utils.sqlCondition(queryBuilder, {
+			'roles.name': {
+				key: 'name',
+				rawValue: roleName,
+				value: `%${roleName}%`,
+				operator: 'LIKE',
+			},
+		});
+
+		const [roles, total] = await processedQueryBuilder
+			.skip(skip)
+			.take(pageSize)
+			.getManyAndCount();
+
+		const resultData = {
+			list: roles,
+			total,
+			page,
+			pageSize,
+		};
+
+		return Result.ok('获取角色列表成功', new ListDto(resultData));
 	}
 
 	async findOne(id: number) {
