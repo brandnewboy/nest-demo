@@ -15,7 +15,7 @@ import { JwtGuard } from '@common/guards/jwt.guard';
 
 import { ConfigEnum } from '@common/enum/config.enum';
 import { connectOptions } from '../ormconfig';
-import Configuration from './configuration';
+import Configuration from './config/configuration';
 
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';

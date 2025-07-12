@@ -1,6 +1,6 @@
 import { ConfigEnum } from '@src/common/enum/config.enum';
 import { resolve } from 'node:path';
-import configuration from './src/configuration';
+import configuration from '@src/config/configuration';
 import { ConfigService } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 

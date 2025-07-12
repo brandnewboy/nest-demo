@@ -13,8 +13,8 @@ console.log('now is running in ', mode, ' mode');
 const COMMON_CONFIG_FILE = 'config.yml';
 const RUN_ENV_FILE = `config.${mode}.yml`;
 
-const COMMON_FILE_PATH = resolve(__dirname, './config', COMMON_CONFIG_FILE);
-const RUN_ENV_PATH = resolve(__dirname, './config', RUN_ENV_FILE);
+const COMMON_FILE_PATH = resolve(__dirname, './', COMMON_CONFIG_FILE);
+const RUN_ENV_PATH = resolve(__dirname, './', RUN_ENV_FILE);
 
 export default () => {
 	const commonConfigFile = readFileSync(COMMON_FILE_PATH, 'utf-8');
