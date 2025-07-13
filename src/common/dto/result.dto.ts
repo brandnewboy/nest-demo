@@ -2,7 +2,7 @@
  * 统一响应对象泛型类
  * @template T - 响应数据的类型
  */
-export class Result<T> {
+export class Result<T = undefined> {
 	/**
 	 * 响应状态码
 	 */
@@ -28,15 +28,15 @@ export class Result<T> {
 		}
 	}
 
+	static ok<T>(data: T): Result<T>;
+	static ok<T>(message: string, data: T): Result<T>;
+	static ok<T>(message: string): Result<T>;
 	/**
 	 * 成功响应的静态工厂方法实现
 	 * @param messageOrData {T | string} - 响应消息或响应数据
 	 * @param data - 响应数据（可选）
 	 * @returns 成功响应对象
 	 */
-	static ok<T>(data: T): Result<T>;
-	static ok<T>(message: string, data: T): Result<T>;
-	static ok(message: string): Result<undefined>;
 	static ok<T>(messageOrData?: string | T, data?: T): Result<T | undefined> {
 		if (typeof messageOrData === 'string' && data !== undefined) {
 			// 消息和数据都传递了
